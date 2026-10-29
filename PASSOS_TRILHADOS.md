@@ -109,16 +109,17 @@ Separar `app.ts` de `server.ts` permite testar a API com Supertest sem abrir uma
 
 | Situação | Resposta |
 |---|---|
-| Falha de rede, timeout (10 s), status não-2xx, JSON inválido ou payload sem `filmes` na API externa | **502 Bad Gateway** (`ExternalApiError`) com mensagem descritiva |
-| Qualquer outro erro inesperado, como falha do parser | **500** com mensagem genérica, sem vazar detalhes internos |
+| Falha de rede, status não-2xx, JSON inválido, payload sem `filmes` ou filmes malformados na API externa | **502 Bad Gateway** (`ExternalApiError`) com mensagem descritiva |
+| Timeout de 10 s da API externa, na requisição ou na leitura do corpo | **504 Gateway Timeout** (`ExternalApiError` com `statusCode` 504) |
+| Qualquer outro erro inesperado | **500** com mensagem genérica, sem vazar detalhes internos |
 | Rota inexistente | **404** em JSON |
 
-**Suíte de testes: 54 testes** com Vitest, todos passando e sem depender de rede.
+**Suíte de testes: 58 testes** com Vitest, todos passando e sem depender de rede.
 
 | Arquivo | Testes | Foco |
 |---|---|---|
 | `moneyParser.spec.ts` | 34 | Parsing, formatação, singular/plural, decimais, prejuízo, entradas inválidas |
 | `movieMapper.spec.ts` | 14 | Transformação completa, fallback de idioma, ausência dos campos removidos |
-| `movieRoutes.spec.ts` | 6 | Integração com Supertest e `fetch` mockado: contrato exato, 502 e 500 |
+| `movieRoutes.spec.ts` | 10 | Integração com Supertest e `fetch` mockado: contrato exato, 502 (rede, status, JSON inválido, envelope, dados malformados) e 504 (timeout) |
 
 O build com `npm run build` também passa sem erros do compilador.

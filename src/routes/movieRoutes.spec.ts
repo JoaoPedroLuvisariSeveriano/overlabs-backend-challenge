@@ -128,7 +128,21 @@ describe('GET /filmes', () => {
     expect(response.body.error).toMatch(/"filmes" ausente/);
   });
 
-  it('retorna 500 genérico quando o parser falha (valor monetário inválido)', async () => {
+  it('retorna 502 quando um filme da API externa vem malformado (sem ratings)', async () => {
+    const { ratings: _ratings, ...malformedMovie } = rawMovie;
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ filmes: [malformedMovie] }), { status: 200 }),
+    );
+
+    const response = await request(app).get('/filmes');
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({
+      error: 'A API externa retornou dados de filmes malformados.',
+    });
+  });
+
+  it('retorna 502 quando um valor monetário da API externa é inválido', async () => {
     fetchSpy.mockResolvedValue(
       new Response(
         JSON.stringify({ filmes: [{ ...rawMovie, bilheteria: 'sem valor' }] }),
@@ -138,8 +152,41 @@ describe('GET /filmes', () => {
 
     const response = await request(app).get('/filmes');
 
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: 'Erro interno do servidor.' });
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({
+      error: 'A API externa retornou dados de filmes malformados.',
+    });
+  });
+
+  it('retorna 502 quando a API externa responde com JSON inválido', async () => {
+    fetchSpy.mockResolvedValue(new Response('<html>not json</html>', { status: 200 }));
+
+    const response = await request(app).get('/filmes');
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({ error: 'A API externa retornou um JSON inválido.' });
+  });
+
+  it('retorna 504 quando a API externa estoura o timeout na requisição', async () => {
+    fetchSpy.mockRejectedValue(new DOMException('The operation timed out.', 'TimeoutError'));
+
+    const response = await request(app).get('/filmes');
+
+    expect(response.status).toBe(504);
+    expect(response.body).toEqual({ error: 'A API externa não respondeu em 10 segundos.' });
+  });
+
+  it('retorna 504 (e não "JSON inválido") quando o timeout ocorre ao ler o corpo', async () => {
+    fetchSpy.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new DOMException('The operation timed out.', 'TimeoutError')),
+    } as unknown as Response);
+
+    const response = await request(app).get('/filmes');
+
+    expect(response.status).toBe(504);
+    expect(response.body).toEqual({ error: 'A API externa não respondeu em 10 segundos.' });
   });
 });
 

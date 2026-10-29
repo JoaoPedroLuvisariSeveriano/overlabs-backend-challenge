@@ -6,7 +6,6 @@ import { ExternalApiError } from './services/movieService';
 const app = express();
 
 app.use(cors());
-app.use(express.json());
 
 app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'API Overlabs rodando. Acesse /filmes' });
@@ -23,7 +22,7 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
 
   if (error instanceof ExternalApiError) {
-    res.status(502).json({ error: error.message });
+    res.status(error.statusCode).json({ error: error.message });
     return;
   }
 

@@ -6,7 +6,7 @@ API REST em **Node.js + TypeScript** que consome a API externa de metadados de f
 
 ## Tecnologias
 
-- [Node.js](https://nodejs.org/) 18+ (usa o `fetch` nativo)
+- [Node.js](https://nodejs.org/) **22.12 ou superior** (usa o `fetch` nativo; exigência do Vitest 5)
 - [TypeScript](https://www.typescriptlang.org/) em modo estrito
 - [Express](https://expressjs.com/) 5 e [CORS](https://github.com/expressjs/cors)
 - [Vitest](https://vitest.dev/) e [Supertest](https://github.com/ladjs/supertest) para testes unitários e de integração
@@ -26,7 +26,7 @@ npm run build
 # 4. Executar o build
 npm start
 
-# 5. Rodar os testes (54 testes, sem depender de rede)
+# 5. Rodar os testes (58 testes, sem depender de rede)
 npm test
 ```
 
@@ -93,8 +93,9 @@ Os campos `locacoes`, `poster`, `trailer`, `elenco`, `orcamento`, `bilheteria`, 
 
 | Status | Quando |
 |---|---|
-| `502 Bad Gateway` | A API externa falhou: rede, timeout, status não-2xx, JSON inválido ou payload sem `filmes` |
-| `500 Internal Server Error` | Erro inesperado, como falha no parser |
+| `502 Bad Gateway` | A API externa falhou: rede, status não-2xx, JSON inválido, payload sem `filmes` ou filmes malformados |
+| `504 Gateway Timeout` | A API externa não respondeu em 10 segundos (na requisição ou na leitura do corpo) |
+| `500 Internal Server Error` | Erro inesperado interno |
 | `404 Not Found` | Rota inexistente |
 
 ```json
