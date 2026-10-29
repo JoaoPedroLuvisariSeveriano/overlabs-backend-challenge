@@ -19,7 +19,6 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Middleware global de erro (precisa dos 4 parâmetros para o Express reconhecê-lo).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
 
