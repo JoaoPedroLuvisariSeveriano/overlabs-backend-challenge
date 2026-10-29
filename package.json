@@ -1,0 +1,17 @@
+{
+  "name": "overlabs-backend-challenge",
+  "version": "1.0.0",
+  "description": "API REST que consome metadados de filmes e expõe GET /filmes com dados transformados",
+  "main": "dist/server.js",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
